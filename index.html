@@ -111,7 +111,7 @@ tr:hover td{background:#fafcff}
   </div>
 </div>
 
-<div id="app" class="app" style="display:flex">
+<div id="app" class="app" style="display:none">
   <aside class="sidebar">
     <div class="brand">
       <h1>📖 مسابقة القرآن</h1>
@@ -298,13 +298,12 @@ tr:hover td{background:#fafcff}
    1) ضع بيانات مشروع Firebase هنا
    ========================================================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyCqEKczu6G8KL-8e3sIQDjd5X1Q42_1Vsg",
-  authDomain: "qraantest.firebaseapp.com",
-  projectId: "qraantest",
-  storageBucket: "qraantest.firebasestorage.app",
-  messagingSenderId: "790863102046",
-  appId: "1:790863102046:web:4765d255d41b6ec97e74cf",
-  measurementId: "G-KFZ2PKD07P"
+  apiKey: "ضع_API_KEY_هنا",
+  authDomain: "ضع_AUTH_DOMAIN_هنا",
+  projectId: "ضع_PROJECT_ID_هنا",
+  storageBucket: "ضع_STORAGE_BUCKET_هنا",
+  messagingSenderId: "ضع_MESSAGING_SENDER_ID_هنا",
+  appId: "ضع_APP_ID_هنا"
 };
 
 /* =========================================================
@@ -408,14 +407,11 @@ function nextCode(){
 
 async function initFirebase(){
   if(!firebaseConfigured()){
-    $("loginScreen").style.display="none";
-    $("app").style.display="none";
-    toast("إعدادات Firebase غير مكتملة","error");
+    $("loginScreen").style.display="flex";
+    $("configMessage").innerHTML="<b>قبل التشغيل:</b> افتح الكود وابحث عن <code>firebaseConfig</code> وضع بيانات مشروع Firebase الخاص بك. الخطوات موجودة أسفل الرسالة.";
     return;
   }
   try{
-    $("loginScreen").style.display="none";
-    $("app").style.display="flex";
     firebase.initializeApp(firebaseConfig);
     auth=firebase.auth();
     db=firebase.firestore();
@@ -428,14 +424,8 @@ async function initFirebase(){
         await loadSettings();
         subscribeStudents();
       }else{
-        $("app").style.display="flex";
-        try{
-          showLoading();
-          await auth.signInAnonymously();
-        }catch(e){
-          toast("تعذر الدخول التلقائي إلى Firebase: "+e.message,"error");
-          $("app").style.display="none";
-        }finally{showLoading(false)}
+        $("app").style.display="none";
+        $("loginScreen").style.display="flex";
       }
     });
   }catch(e){
@@ -445,11 +435,18 @@ async function initFirebase(){
 }
 
 async function startAnonymousLogin(){
-  if(auth && !auth.currentUser) await auth.signInAnonymously();
+  if(!firebaseConfigured()){
+    toast("ضع بيانات Firebase داخل الكود أولًا","error"); return;
+  }
+  try{
+    showLoading();
+    await auth.signInAnonymously();
+  }catch(e){toast("فشل الدخول: "+e.message,"error")}
+  finally{showLoading(false)}
 }
 
 async function logout(){
-  if(auth && !auth.currentUser) await auth.signInAnonymously();
+  if(auth) await auth.signOut();
 }
 
 function subscribeStudents(){
